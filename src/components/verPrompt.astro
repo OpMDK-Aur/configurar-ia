@@ -1,0 +1,207 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getAsistente } from '../services';
+import type { FormularioConfiguracion } from '../types';
+import type { AirtableRecord } from '../types/airtable';
+import Title from './Title.astro';
+
+
+// Busca la configuración del asistente en Airtable
+const { success, data, error } = await getAsistente();
+
+if (!success || !data) {
+  throw new Error(error || 'Error al obtener la configuración del asistente');
+}
+
+const airtableRecord = data as AirtableRecord;
+const config = airtableRecord.fields as FormularioConfiguracion;
+---
+
+<Layout title="Configuración del Prompt">
+  <main class="container mx-auto px-4 py-8">
+    <Title text="Configuración del Prompt" />
+    <div class="grid gap-6">
+      <!-- Sección Principal -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Información Principal</h2>
+        <div class="grid gap-4">
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Nombre del Asistente</h3>
+            <p class="text-gray-600">{config.NombreAsistente}</p>
+          </div>
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Empresa</h3>
+            <p class="text-gray-600">{config.NombreEmpresa}</p>
+          </div>
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Tono de Comunicación</h3>
+            <p class="text-gray-600">{config.Tono}</p>
+          </div>
+          {config.DescripcionEmpresa && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Descripción de la Empresa</h3>
+              <p class="text-gray-600">{config.DescripcionEmpresa}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Objetivo y Rubro -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Objetivo y Rubro</h2>
+        <div class="grid gap-4">
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Objetivo</h3>
+            <p class="text-gray-600">{config.Objetivo}</p>
+            <div class="mt-2 text-sm text-gray-500">
+              <h4 class="font-medium">Tipos de Objetivos:</h4>
+              <ul class="list-disc list-inside mt-1">
+                <li>Asesorar: Responde preguntas frecuentes y deriva si detecta intención de compra</li>
+                <li>Precalificar: Detecta posibles clientes mediante preguntas clave</li>
+                <li>Asesorar y Precalificar: Combina ambas funciones</li>
+                <li>Recolectar información y derivar: Obtiene datos necesarios para avanzar</li>
+                <li>Recolectar información, asesorar y derivar: Solución completa</li>
+              </ul>
+            </div>
+          </div>
+          {config.Sector && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Rubro</h3>
+              <p class="text-gray-600">{config.Sector}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Personalidad y Cliente Objetivo -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Personalidad y Público</h2>
+        <div class="grid gap-4">
+          {config.Personalidad && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Personalidad</h3>
+              <p class="text-gray-600">{config.Personalidad}</p>
+            </div>
+          )}
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Cliente Objetivo</h3>
+            <p class="text-gray-600">{config.ClientesObjetivos}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Calificación y Preguntas Frecuentes -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Calificación y FAQs</h2>
+        <div class="grid gap-4">
+          {config.PreguntasCalificacion && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Preguntas de Calificación</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.PreguntasCalificacion}</p>
+            </div>
+          )}
+          {config.PreguntasFrecuentes && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Preguntas Frecuentes</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.PreguntasFrecuentes}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Manejo de Objeciones y Límites -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Manejo de Situaciones</h2>
+        <div class="grid gap-4">
+          {config.ManejoObjeciones && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Manejo de Objeciones</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.ManejoObjeciones}</p>
+            </div>
+          )}
+          {config.ProductosNoDisponibles && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Servicios No Ofrecidos</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.ProductosNoDisponibles}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Información Adicional -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Información Adicional</h2>
+        <div class="grid gap-4">
+          {config.SitiosWeb && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Sitios Web de Referencia</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.SitiosWeb}</p>
+            </div>
+          )}
+          {config.InfoAdicional && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Información Extra</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.InfoAdicional}</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <!-- Guía de Comunicación -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Guía de Comunicación</h2>
+        <div class="grid gap-4">
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Reglas Obligatorias</h3>
+            <ul class="list-disc list-inside text-gray-600">
+              <li>No repetir información ni saludos</li>
+              <li>Saludar y presentarse solo en la primera interacción</li>
+              <li>Variación y dinamismo en las respuestas</li>
+              <li>No inventar información</li>
+              <li>Usar jerga cordobesa de manera apropiada</li>
+              <li>Evitar signos de exclamación y palabras como "Hey" o "Vaya"</li>
+              <li>Usar español argentino: "vos", "bárbaro", "dale"</li>
+            </ul>
+          </div>
+          <div class="border-b pb-2">
+            <h3 class="font-medium text-gray-700">Expresiones Recomendadas</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 class="font-medium text-gray-700">Informales</h4>
+                <ul class="list-disc list-inside text-gray-600">
+                  <li>Me pasás...?</li>
+                  <li>Tenés...?</li>
+                  <li>Me decís...?</li>
+                  <li>Me mandás...?</li>
+                  <li>Me avisás...?</li>
+                </ul>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-700">Formales</h4>
+                <ul class="list-disc list-inside text-gray-600">
+                  <li>¿Me podrías brindar...?</li>
+                  <li>¿Serías tan amable de...?</li>
+                  <li>¿Me indicás...?</li>
+                  <li>Te agradecería si me enviás...</li>
+                  <li>¿Podrías facilitarme...?</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          {config.EjemplosConversaciones && (
+            <div class="border-b pb-2">
+              <h3 class="font-medium text-gray-700">Ejemplos de Conversaciones</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.EjemplosConversaciones}</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .container {
+    max-width: 1200px;
+  }
+</style> 

@@ -1,0 +1,178 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getAsistente } from '../services';
+import type { FormularioConfiguracion } from '../types';
+import type { AirtableRecord } from '../types/airtable';
+import "../styles/global.css";
+
+// Fetch the configuration data
+const { success, data, error } = await getAsistente();
+
+if (!success || !data) {
+  throw new Error(error || 'Error al obtener la configuración del asistente');
+}
+
+const airtableRecord = data as AirtableRecord;
+const config = airtableRecord.fields as FormularioConfiguracion;
+---
+
+<Layout title="Configuración del Prompt">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Configuración del Prompt</h1>
+
+    <div class="grid gap-6">
+      <!-- Configuración Completa del Prompt -->
+      <section class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Información Principal -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Nombre del Asistente</h3>
+              <p class="text-gray-600">{config.NombreAsistente}</p>
+            </div>
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Empresa</h3>
+              <p class="text-gray-600">Trabajás en la empresa {config.NombreEmpresa}</p>
+              {config.Sector && (
+              <p class="text-gray-600">La empresa pertenece al sector {config.Sector}</p>
+              )}
+            </div>
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Tono de Comunicación</h3>
+              <p class="text-gray-600">{config.Tono}</p>
+            </div>
+            {config.DescripcionEmpresa && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Descripción de la Empresa</h3>
+              <p class="text-gray-600">{config.DescripcionEmpresa}</p>
+            </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Objetivo y Rubro -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Objetivo</h3>
+              <p class="text-gray-600">Tu objetivo es {config.Objetivo}</p>
+              {config.Objetivo === "Asesorar" && (
+              <p class="text-gray-600">Ideal para mejorar la atención al cliente y ahorrar tiempo en consultas repetitivas.</p>
+              <p class="text-gray-600">Responder preguntas frecuentes y brindar información útil sobre tus productos o servicios.</p>
+              <p class="text-gray-600">Si detectas intención de compra, derivar.</p>
+              )}
+              {(config.Objetivo === "Precalificar" &&
+              <p class="text-gray-600">Ayuda a filtrar a los curiosos y solo deriva leads con intención de compra.</p>
+              <p class="text-gray-600">Realizar preguntas clave para evaluar y detectar si el usuario es un posible cliente.</p>
+              )}
+              {config.Objetivo === "Asesorar y Precalificar" && (
+              <p class="text-gray-600">Mejora la experiencia del usuario y evita perder tiempo con consultas sin intención de compra.</p>
+              <p class="text-gray-600">Responder preguntas frecuentes y brindar información útil sobre tus productos o servicios.</p>
+              <p class="text-gray-600">Evaluar y detectar si el usuario es un potencial cliente.</p>
+              )} 
+              {config.Objetivo === "Recolectar informacion y deriva" && (
+              <p class="text-gray-600">Útil para tareas administrativas o comerciales donde se necesita información previa para actuar.</p>
+              <p class="text-gray-600">Sustraer datos necesarios (nombre, necesidad, presupuesto, etc.) para avanzar con una gestión o venta, para luego deriva al equipo.</p>
+              )}
+              {config.Objetivo === "Recolectar información, asesorar y derivar" && (
+              <p class="text-gray-600">Es una solución completa para atención, organización y eficiencia comercial.</p>
+              <p class="text-gray-600">Responder preguntas frecuentes y brindar información útil sobre tus productos o servicios.</p>
+              <p class="text-gray-600">Evaluar y detectar si el usuario es un potencial cliente.</p>
+              <p class="text-gray-600">Recolectar datos necesarios para la derivación al equipo.</p>
+              <p class="text-gray-600">Derivar si se detecta una oportunidad o si se completa el proceso de consulta.</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <!-- Personalidad y Cliente Objetivo -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            {config.Personalidad && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Personalidad</h3>
+              <p class="text-gray-600">{config.Personalidad}</p>
+            </div>
+            )}
+            {config.ClientesObjetivos && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Cliente Objetivo</h3>
+              <p class="text-gray-600">{config.ClientesObjetivos}</p>
+            </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Calificación y Preguntas Frecuentes -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            {config.PreguntasCalificacion && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Preguntas de Calificación</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.PreguntasCalificacion}</p>
+            </div>
+            )}
+            {config.PreguntasFrecuentes && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Preguntas Frecuentes</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.PreguntasFrecuentes}</p>
+            </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Manejo de Objeciones y Límites -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            {config.ManejoObjeciones && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Manejo de Objeciones</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.ManejoObjeciones}</p>
+            </div>
+            )}
+            {config.ProductosNoDisponibles && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Servicios No Ofrecidos</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.ProductosNoDisponibles}</p>
+            </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            {config.SitiosWeb && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Sitios Web de Referencia</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.SitiosWeb}</p>
+            </div>
+            )}
+            {config.InfoAdicional && (
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Información Extra</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.InfoAdicional}</p>
+            </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Ejemplos de Conversaciones -->
+        <div class="mb-8">
+          <div class="grid gap-4">
+            <div class="pb-2">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2">Ejemplos de Conversaciones</h3>
+              <p class="text-gray-600 whitespace-pre-line">{config.EjemplosConversaciones}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+.container {
+  max-width: 1200px;
+}
+</style> 

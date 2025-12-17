@@ -1,0 +1,30 @@
+---
+import { actions } from "astro:actions";
+import type { FormularioConfiguracion } from "../types/index";
+
+const { data } = await Astro.callAction(actions.obtenerDatosConfiguracion, undefined);
+const fields = data?.data?.fields;
+
+function hasValidAssistant(obj: any): boolean {
+  if (!obj || typeof obj !== 'object') return false;
+  const hasAssistantId = typeof obj.openAiAssistantId === 'string' && obj.openAiAssistantId.trim().length > 0;
+  const hasRequiredFields = obj.NombreAsistente && obj.NombreEmpresa;
+  return hasAssistantId && hasRequiredFields;
+}
+
+const isConfigured = hasValidAssistant(fields);
+const nombreAsistente = fields?.NombreAsistente;
+---
+
+<div class="mb-6 p-4 flex items-center gap-3">
+  <div class={`w-4 h-4 rounded-full ${isConfigured ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+  <div>
+    <span class={`font-semibold ${isConfigured ? 'text-green-800' : 'text-yellow-800'}`}>Estado del Asistente</span>
+    <span class={`block text-sm ${isConfigured ? 'text-green-700' : 'text-yellow-700'}`}>
+      {isConfigured 
+        ? `${nombreAsistente} está configurado y listo para probar`
+        : '⚠️ El asistente necesita ser configurado antes de poder chatear'
+      }
+    </span>
+  </div>
+</div>

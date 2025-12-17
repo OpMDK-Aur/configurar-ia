@@ -1,0 +1,196 @@
+---
+import { actions } from "astro:actions";
+import { ConfiguracionAvanzada } from "../types/index";
+import type { AirtableRecord } from "../types/airtable";
+import Spinner from "./Spinner.astro";
+
+export const prerender = false;
+
+const { data, error } = await Astro.callAction(actions.obtenerConfiguracionAvanzada, undefined);
+
+if (error) console.error(error);
+
+const airtableData = data?.data as AirtableRecord | undefined;
+const fields = airtableData?.fields as ConfiguracionAvanzada | undefined;
+
+const formData: ConfiguracionAvanzada = {
+  TiempoRespuesta: fields?.TiempoRespuesta || 10,
+  Recontactos: fields?.Recontactos || 0,
+  TiempoRecontacto: fields?.TiempoRecontacto || 3,
+  UnidadRecontactos: fields?.UnidadRecontactos || "hours",
+};
+
+---
+<div class="flex flex-col w-full px-[60px]">
+    <div id="alertContainer" class="absolute top-0 right-0 z-50"></div>
+    <div class="advanced-section">
+        <h2 class="text-2xl text-[#000055] pb-5">Configuración de asistente</h2>
+        <form id="apiConfigForm" class="flex flex-col w-[400px]" method="POST" action={actions.guardarConfiguracionAvanzada}>
+            <div id="alertContainer"></div>
+            <div class="flex flex-col gap-2 pb-5">
+                <label for="Recontactos" class="text-[#7806F1] text-xl font-bold">Cantidad de recontactos</label>
+                <div class="flex gap-2 items-center">
+                    <input
+                        class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] w-full"
+                        type="number"
+                        id="Recontactos"
+                        name="Recontactos"
+                        placeholder="Ingrese la cantidad de recontactos"
+                        value={formData.Recontactos}
+                        min="0"
+                    />
+                </div>
+            </div>
+            <div class="flex flex-col gap-2 pb-5">
+                <label for="TiempoRespuesta" class="text-[#7806F1] text-xl font-bold">Tiempo de respuesta (segundos)</label>
+                <input
+                    class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] w-full"
+                    type="number"
+                    id="TiempoRespuesta"
+                    name="TiempoRespuesta"
+                    placeholder="Mínimo 10 segundos"
+                    value={formData.TiempoRespuesta}
+                    min="10"
+                />
+            </div>
+            <div class="flex flex-col gap-2 pb-5">
+                <label for="TiempoRecontacto" class="text-[#7806F1] text-xl font-bold">Tiempo de recontacto</label>
+                <div class="flex gap-2 items-center">
+                    <input
+                        class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] w-full"
+                        type="number"
+                        id="TiempoRecontacto"
+                        name="TiempoRecontacto"
+                        placeholder="Mínimo 1 minuto"
+                        value={formData.TiempoRecontacto}
+                        min="1"
+                    />
+                    <select
+                        id="UnidadRecontactos"
+                        name="UnidadRecontactos"
+                        class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1]"
+                    >
+                        <option value="minutes" selected={formData.UnidadRecontactos === 'minutes'}>minutos</option>
+                        <option value="hours" selected={formData.UnidadRecontactos === 'hours'}>horas</option>
+                        <option value="days" selected={formData.UnidadRecontactos === 'days'}>dias</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <button
+                    type="submit"
+                    class="bg-[#976FF1] py-2 px-5 rounded-lg text-white text-lg w-48 self-center hover:cursor-pointer transition-all duration-150 active:scale-95 flex items-center justify-center gap-2"
+                >
+                    <span id="buttonText">Guardar Cambios</span>
+                    <div id="spinner" class="hidden">
+                        <Spinner size="small" />
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+import { actions } from "astro:actions";
+
+  const form = document.getElementById('apiConfigForm') as HTMLFormElement;
+  const spinner = document.getElementById('spinner') as HTMLDivElement;
+  const buttonText = document.getElementById('buttonText') as HTMLSpanElement;
+  const alertContainer = document.getElementById('alertContainer') as HTMLDivElement;
+
+  function showAlert(type: 'success' | 'error', message: string) {
+    const alertElement = document.createElement('div');
+    alertContainer.innerHTML = '';
+    alertContainer.appendChild(alertElement);
+    
+    const alert = document.createElement('div');
+    alert.className = `p-4 mb-4 rounded-lg relative ${
+      type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+    }`;
+    
+    // Contenedor del mensaje
+    const messageContainer = document.createElement('div');
+    messageContainer.className = 'pr-8'; // Espacio para el botón de cerrar
+    messageContainer.textContent = message;
+    alert.appendChild(messageContainer);
+
+    // Botón de cerrar
+    const closeButton = document.createElement('button');
+    closeButton.className = 'absolute top-2 right-2 text-gray-500 hover:text-gray-700 focus:outline-none hover:cursor-pointer';
+    closeButton.innerHTML = `
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    `;
+    closeButton.addEventListener('click', () => {
+      alertElement.remove();
+    });
+    alert.appendChild(closeButton);
+
+    alertElement.appendChild(alert);
+
+    // Auto-cerrar después de 10 segundos
+    setTimeout(() => {
+      alertElement.remove();
+    }, 10000);
+  }
+
+  function setLoading(isLoading: boolean) {
+    if (isLoading) {
+      spinner.classList.remove('hidden');
+      buttonText.textContent = 'Guardando...';
+      form.querySelectorAll('input').forEach(el => {
+        (el as HTMLElement).setAttribute('disabled', 'true');
+      });
+    } else {
+      spinner.classList.add('hidden');
+      buttonText.textContent = 'Guardar Cambios';
+      form.querySelectorAll('input').forEach(el => {
+        (el as HTMLElement).removeAttribute('disabled');
+      });
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    //console.log(formData);
+    
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    setLoading(true);
+
+    const airtableData = {
+      fields: {
+        TiempoRespuesta: Number(formData.get("TiempoRespuesta")),
+        Recontactos: Number(formData.get("Recontactos")),
+        TiempoRecontacto: Number(formData.get("TiempoRecontacto")),
+        UnidadRecontactos: String(formData.get("UnidadRecontactos") || "hours"),
+      }
+    };
+  console.info({airtableData})
+
+    try {
+      const { data, error } = await actions.guardarConfiguracionAvanzada(airtableData);
+      console.log({data, error});
+
+      if (error) {
+        console.error('Error:', error);
+        showAlert("error", "Error al guardar los cambios");
+      } else if (data?.success) {
+        showAlert("success", "Cambios guardados exitosamente");
+      } else {
+        showAlert("error", "Error al guardar los cambios");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showAlert('error', 'Error al guardar los cambios');
+    } finally {
+      setLoading(false);
+    }
+  });
+</script>

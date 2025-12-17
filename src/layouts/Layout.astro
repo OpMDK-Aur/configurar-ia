@@ -1,0 +1,76 @@
+---
+import NavBar from "../components/NavBar.astro";
+import { actions } from "astro:actions";
+import type { FormularioConfiguracion } from "../types/index";
+import { AlertProvider } from "../components/AlertSystem";
+import "../styles/animations.css";
+
+const { data } = await Astro.callAction(actions.obtenerDatosConfiguracion, undefined);
+const fields = data?.data?.fields;
+
+// Validación más robusta del asistente
+function hasValidAssistant(obj: any): boolean {
+  if (!obj || typeof obj !== 'object') return false;
+  
+  // Verificar que existe openAiAssistantId y no está vacío
+  const hasAssistantId = typeof (obj as any).openAiAssistantId === 'string' && (obj as any).openAiAssistantId.trim().length > 0;
+  
+  // Verificar campos requeridos
+  const hasRequiredFields = (obj as any).NombreAsistente && (obj as any).NombreEmpresa;
+  
+  return hasAssistantId && hasRequiredFields;
+}
+
+const disableLinks = !hasValidAssistant(fields);
+---
+
+<!doctype html>
+<html lang="en" data-has-assistant={hasValidAssistant(fields) ? 'true' : 'false'}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Configuración de IA</title>
+	</head>
+	<body class="min-h-screen bg-gradient-to-br from-[#f6f3ff] to-[#e9e6f7]">
+		<AlertProvider client:load>
+			<NavBar disableLinks={disableLinks} />
+			<main class="flex-1 flex flex-col items-center pl-48 py-12 min-h-screen">
+				<div class="w-full max-w-5xl bg-white/60 backdrop-blur-md rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+					<slot />
+				</div>
+			</main>
+		</AlertProvider>
+		
+		<script>
+			// Expose alert functions globally for non-React components
+			(window as any).showAlert = function(type: string, message: string) {
+				// Dispatch custom event that React components can listen to
+				window.dispatchEvent(new CustomEvent('showAlert', {
+					detail: { type, message }
+				}));
+			};
+			
+			(window as any).clearAlerts = function() {
+				window.dispatchEvent(new CustomEvent('clearAlerts'));
+			};
+		</script>
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+		background-image: url("../assets/background.png");
+		background-size: cover;
+		background-position: center;
+		background-attachment: fixed;
+		font-family: 'Gilroy', sans-serif;
+		display: flex;
+		color: #333;
+	}
+</style>

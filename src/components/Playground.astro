@@ -1,0 +1,10 @@
+---
+import Chat from './Chat';
+
+// Solo capturar el id del Cliente desde las variables de entorno
+const clienteId = import.meta.env.LOCATION_ID;
+---
+
+<section class="flex flex-col w-full px-10 pb-10">
+    <Chat client:load clienteId={clienteId} />
+</section>

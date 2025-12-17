@@ -1,0 +1,559 @@
+---
+import { actions } from "astro:actions";
+import { FormularioConfiguracion, Tono, Objetivo } from "../types/index";
+import type { AirtableRecord } from "../types/airtable";
+import Spinner from "./Spinner.astro";
+
+export const prerender = false;
+
+const { data, error } = await Astro.callAction(
+  actions.obtenerDatosConfiguracion,
+  undefined
+);
+
+if (error) console.error(error);
+
+// Transform Airtable data to form data structure
+const airtableData = data?.data as AirtableRecord | undefined;
+const fields = airtableData?.fields as FormularioConfiguracion | undefined;
+
+const formData: FormularioConfiguracion = {
+  NombreAsistente: fields?.NombreAsistente || "",
+  NombreEmpresa: fields?.NombreEmpresa || "",
+  DescripcionEmpresa: fields?.DescripcionEmpresa || "",
+  Objetivo: fields?.Objetivo || Objetivo.Precalificar,
+  Tono: fields?.Tono || Tono.Profesional,
+  Sector: fields?.Sector || "",
+  Personalidad: fields?.Personalidad || "",
+  ClientesObjetivos: fields?.ClientesObjetivos || "",
+  PreguntasFrecuentes: fields?.PreguntasFrecuentes || "",
+  PreguntasCalificacion: fields?.PreguntasCalificacion || "",
+  EjemplosConversaciones: fields?.EjemplosConversaciones || "",
+  ManejoObjeciones: fields?.ManejoObjeciones || "",
+  ProductosNoDisponibles: fields?.ProductosNoDisponibles || "",
+  SitiosWeb: fields?.SitiosWeb || "",
+  InfoAdicional: fields?.InfoAdicional || "",
+  MensajeRecontacto: fields?.MensajeRecontacto || `Un mensaje persuasivo que capte nuevamente su atención.
+Evitá usar frases como "claro" o "entiendo", ya que el usuario dejó de responder tus consultas previas.
+En su lugar, despertá curiosidad o destacá un beneficio puntual, según el rubro y los datos que tengas disponibles.
+${fields?.Tono && fields?.Tono !== "" ? `Mantené el tono ${fields.Tono.toLowerCase()}.`:""}`
+};
+---
+<!-- Alert container will be handled by AlertSystem component -->
+{!fields?.openAiAssistantId ? (
+  <div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
+    <strong>¡Aún no tienes un agente creado!</strong> Completa la configuración y presiona <b>Crear agente</b> para comenzar.
+  </div>
+) : (
+  <div class="flex justify-end w-full mb-2">
+    <div class="relative group">
+      <span class="inline-block w-4 h-4 rounded-full bg-green-500 border-2 border-green-700 shadow cursor-pointer"></span>
+      <div class="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 rounded bg-green-700 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+        Agente creado y vinculado correctamente
+      </div>
+    </div>
+  </div>
+)}
+<form
+  id="configForm"
+  class="w-full"
+>
+  <div class="flex flex-col gap-5">
+    <div class="grid grid-cols-3 gap-10 z-20 px-2.5">
+      <div class="flex flex-col gap-2">
+        <label
+          for="NombreAsistente"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="El nombre que tendrá tu asistente virtual. Este nombre será visible para tus clientes."
+        >
+          Nombre del asistente
+          <span class="text-red-500 ml-1">*</span>
+        </label>
+        <input
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          type="text"
+          id="NombreAsistente"
+          name="NombreAsistente"
+          placeholder="Ingrese el nombre del asistente"
+          value={formData.NombreAsistente}
+          required
+          aria-label="Nombre del asistente"
+          aria-describedby="NombreAsistente-description"
+        />
+        <span id="NombreAsistente-description" class="sr-only">
+          El nombre que tendrá tu asistente virtual. Este nombre será visible para tus clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="NombreEmpresa"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="El nombre de tu empresa o negocio. Este nombre será usado por el asistente para referirse a tu empresa."
+        >
+          Nombre de la empresa
+          <span class="text-red-500 ml-1">*</span>
+        </label>
+        <input
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          type="text"
+          id="NombreEmpresa"
+          name="NombreEmpresa"
+          placeholder="Ingrese el nombre de la empresa"
+          value={formData.NombreEmpresa}
+          required
+          aria-label="Nombre de la empresa"
+          aria-describedby="NombreEmpresa-description"
+        />
+        <span id="NombreEmpresa-description" class="sr-only">
+          El nombre de tu empresa o negocio. Este nombre será usado por el asistente para referirse a tu empresa.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="Tono"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Define el estilo de comunicación del asistente. Profesional: formal y directo. Informal: cercano y casual. Técnico: especializado y detallado. Cercano: amigable y personal. Empático: comprensivo y emocional."
+        >
+          Tono
+        </label>
+        <div class="relative">
+          <select
+            id="Tono"
+            name="Tono"
+            class="w-full bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] appearance-none pr-10 h-12"
+            value={formData.Tono}
+            required
+            aria-label="Tono de comunicación"
+            aria-describedby="Tono-description"
+          >
+            <option value="">Seleccione el tono del asistente</option>
+            <option
+              value={Tono.Profesional}
+              selected={formData.Tono === Tono.Profesional}
+              >Profesional</option
+            >
+            <option
+              value={Tono.Informal}
+              selected={formData.Tono === Tono.Informal}
+              >Informal</option
+            >
+            <option
+              value={Tono.Tecnico}
+              selected={formData.Tono === Tono.Tecnico}
+              >Técnico</option
+            >
+            <option
+              value={Tono.Cercano}
+              selected={formData.Tono === Tono.Cercano}
+              >Cercano</option
+            >
+            <option
+              value={Tono.Empatico}
+              selected={formData.Tono === Tono.Empatico}
+              >Empático</option
+            >
+          </select>
+          <span id="Tono-description" class="sr-only">
+            Define el estilo de comunicación del asistente. Profesional: formal y directo. Informal: cercano y casual. Técnico: especializado y detallado. Cercano: amigable y personal. Empático: comprensivo y emocional.
+          </span>
+          <img
+            width="16"
+            height="16"
+            src="/circle-arrow-down.svg"
+            alt="Icono de flecha hacia abajo"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-10 px-2.5">
+      <div class="flex flex-col gap-2">
+        <label
+          for="Sector"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="El sector o industria en la que opera tu empresa. Esto ayuda al asistente a entender mejor el contexto de tu negocio."
+        >
+          Sector
+        </label>
+        <input
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          type="text"
+          id="Sector"
+          name="Sector"
+          placeholder="Ingrese el sector de la empresa"
+          value={formData.Sector}
+          aria-label="Sector de la empresa"
+          aria-describedby="Sector-description"
+        />
+        <span id="Sector-description" class="sr-only">
+          El sector o industria en la que opera tu empresa. Esto ayuda al asistente a entender mejor el contexto de tu negocio.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="Objetivo"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="El objetivo principal del asistente al interactuar con los clientes."
+        >
+          Objetivo
+        </label>
+        <div class="relative">
+          <select
+            id="Objetivo"
+            name="Objetivo"
+            class="w-full bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] appearance-none pr-10 h-12"
+            value={formData.Objetivo}
+            required
+            aria-label="Objetivo del asistente"
+            aria-describedby="Objetivo-description"
+          >
+            <option value="">Seleccione el objetivo del asistente</option>
+            <option
+              value={Objetivo.Asesorar}
+              selected={formData.Objetivo === Objetivo.Asesorar}
+              >Asesorar</option
+            >
+            <option
+              value={Objetivo.Precalificar}
+              selected={formData.Objetivo === Objetivo.Precalificar}
+              >Precalificar</option
+            >
+            <option
+              value={Objetivo.AsesoraryPrecalificar}
+              selected={formData.Objetivo === Objetivo.AsesoraryPrecalificar}
+              >Asesorar y Precalificar</option
+            >
+            <option
+              value={Objetivo.Recolectarinformacionyderivar}
+              selected={formData.Objetivo === Objetivo.Recolectarinformacionyderivar}
+              >Recolectar información y derivar</option
+            >
+            <option
+              value={Objetivo.Recolectarinformacionasesoraryderivar}
+              selected={formData.Objetivo === Objetivo.Recolectarinformacionasesoraryderivar}
+              >Recolectar información, asesorar y derivar</option
+            >
+          </select>
+          <span id="Objetivo-description" class="sr-only">
+            El objetivo principal del asistente al interactuar con los clientes.
+          </span>
+          <img
+            width="16"
+            height="16"
+            src="/circle-arrow-down.svg"
+            alt="Icono de flecha hacia abajo"
+            class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-5 px-2.5">
+      <div class="flex flex-col gap-2">
+        <label
+          for="DescripcionEmpresa"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Una descripción detallada de tu empresa, incluyendo su misión, visión y valores. Esto ayuda al asistente a representar mejor tu marca."
+        >
+          Descripción de la empresa
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="DescripcionEmpresa"
+          name="DescripcionEmpresa"
+          placeholder="Ingrese la descripción de la empresa"
+          aria-label="Descripción de la empresa"
+          aria-describedby="DescripcionEmpresa-description"
+          >{formData.DescripcionEmpresa}</textarea
+        >
+        <span id="DescripcionEmpresa-description" class="sr-only">
+          Una descripción detallada de tu empresa, incluyendo su misión, visión y valores. Esto ayuda al asistente a representar mejor tu marca.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="Personalidad"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Define la personalidad y el estilo de comunicación del asistente. Incluye cómo debe comportarse, qué tono usar y cómo debe interactuar con los clientes."
+        >
+          Personalidad
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="Personalidad"
+          name="Personalidad"
+          placeholder="Ingrese el comportamiento del asistente"
+          aria-label="Personalidad del asistente"
+          aria-describedby="Personalidad-description"
+          >{formData.Personalidad}</textarea
+        >
+        <span id="Personalidad-description" class="sr-only">
+          Define la personalidad y el estilo de comunicación del asistente. Incluye cómo debe comportarse, qué tono usar y cómo debe interactuar con los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="ClientesObjetivos"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Describe el perfil de tus clientes ideales. Incluye características demográficas, necesidades y comportamientos."
+        >
+          Clientes objetivos
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="ClientesObjetivos"
+          name="ClientesObjetivos"
+          placeholder="Ingrese los clientes objetivo del asistente"
+          aria-label="Clientes objetivos"
+          aria-describedby="ClientesObjetivos-description"
+          >{formData.ClientesObjetivos}</textarea
+        >
+        <span id="ClientesObjetivos-description" class="sr-only">
+          Describe el perfil de tus clientes ideales. Incluye características demográficas, necesidades y comportamientos.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="PreguntasCalificacion"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Preguntas que el asistente debe hacer para calificar y entender mejor las necesidades del cliente."
+        >
+         ¿Cuándo querés que se derive a un vendedor?
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="PreguntasCalificacion"
+          name="PreguntasCalificacion"
+          placeholder="Ingrese las preguntas de calificacion"
+          aria-label="Preguntas de calificación"
+          aria-describedby="PreguntasCalificacion-description"
+          >{formData.PreguntasCalificacion}</textarea
+        >
+        <span id="PreguntasCalificacion-description" class="sr-only">
+          Preguntas que el asistente debe hacer para calificar y entender mejor las necesidades del cliente.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="PreguntasFrecuentes"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Temas y preguntas frecuentes que el asistente debe conocer y poder responder."
+        >
+          Lista de preguntas comunes que los clientes suelen hacer
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="PreguntasFrecuentes"
+          name="PreguntasFrecuentes"
+          placeholder="Ingrese preguntas frecuentes"
+          aria-label="Temas frecuentes"
+          aria-describedby="PreguntasFrecuentes-description"
+          >{formData.PreguntasFrecuentes}</textarea
+        >
+        <span id="PreguntasFrecuentes-description" class="sr-only">
+          Temas y preguntas frecuentes que el asistente debe conocer y poder responder.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="ManejoObjeciones"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Cómo el asistente debe manejar objeciones y situaciones difíciles con los clientes."
+        >
+          Cómo responder ante dudas o rechazos del cliente
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="ManejoObjeciones"
+          name="ManejoObjeciones"
+          placeholder="Ingrese algunos casos de errores"
+          aria-label="Casos de errores"
+          aria-describedby="ManejoObjeciones-description"
+          >{formData.ManejoObjeciones}</textarea
+        >
+        <span id="ManejoObjeciones-description" class="sr-only">
+          Cómo el asistente debe manejar objeciones y situaciones difíciles con los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="ProductosNoDisponibles"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Lista de productos o servicios que no están disponibles y cómo el asistente debe comunicarlo a los clientes."
+        >
+          Productos o servicios que no están disponibles en nuestra empresa
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="ProductosNoDisponibles"
+          name="ProductosNoDisponibles"
+          placeholder="Ingrese los productos no disponibles"
+          aria-label="Productos no disponibles"
+          aria-describedby="ProductosNoDisponibles-description"
+          >{formData.ProductosNoDisponibles}</textarea
+        >
+        <span id="ProductosNoDisponibles-description" class="sr-only">
+          Lista de productos o servicios que no están disponibles y cómo el asistente debe comunicarlo a los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="InfoAdicional"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Cómo el asistente debe manejar objeciones y situaciones difíciles con los clientes."
+        >
+          Información adicional: ¿Te gustaría que la IA sepa sobre algo mas?
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="InfoAdicional"
+          name="InfoAdicional"
+          placeholder="Informacion adicional"
+          aria-label="Informacion adicional"
+          aria-describedby="InfoAdicional-description"
+          >{formData.InfoAdicional}</textarea
+        >
+        <span id="InfoAdicional-description" class="sr-only">
+          Cómo el asistente debe manejar objeciones y situaciones difíciles con los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="SitiosWeb"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Ingrese las URLs de su sitio web y redes sociales"
+        >
+          Sitios web para obtener información
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="SitiosWeb"
+          name="SitiosWeb"
+          placeholder="SitiosWeb"
+          aria-label="SitiosWeb"
+          aria-describedby="SitiosWeb-description"
+          >{formData.SitiosWeb}</textarea
+        >
+        <span id="SitiosWeb-description" class="sr-only">
+          Cómo el asistente debe manejar objeciones y situaciones difíciles con los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="EjemplosConversaciones"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Ejemplos de conversaciones exitosas que el asistente puede usar como referencia para interactuar con los clientes."
+        >
+          Ejemplos de conversaciones
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="EjemplosConversaciones"
+          name="EjemplosConversaciones"
+          placeholder="Ingrese algunos ejemplos de conversaciones"
+          aria-label="Ejemplos de conversaciones"
+          aria-describedby="EjemplosConversaciones-description"
+          >{formData.EjemplosConversaciones}</textarea
+        >
+        <span id="EjemplosConversaciones-description" class="sr-only">
+          Ejemplos de conversaciones exitosas que el asistente puede usar como referencia para interactuar con los clientes.
+        </span>
+      </div>
+      <div class="flex flex-col gap-2">
+        <label
+          for="MensajeRecontacto"
+          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
+          title="Ejemplos de conversaciones exitosas que el asistente puede usar como referencia para interactuar con los clientes."
+        >
+          Mensaje de Recontacto
+        </label>
+        <textarea
+          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
+          id="MensajeRecontacto"
+          name="MensajeRecontacto"
+          placeholder="Ingrese como debe ser el mensaje de recontacto"
+          aria-label="Mensaje de Recontacto"
+          aria-describedby="MensajeRecontacto-description"
+          >{formData.MensajeRecontacto}</textarea
+        >
+        <span id="MensajesRecontacto-description" class="sr-only">
+          Define como deben ser los mensajes de recontacto, pueden ser indicaciones o ejemplos.
+        </span>
+      </div>
+    </div>
+  </div>
+    <button
+      id="submitBtn"
+      type="submit"
+      class="bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 hover:cursor-pointer transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 relative"
+    >
+      <span id="buttonText">{!fields?.openAiAssistantId ? 'Crear agente' : 'Guardar Cambios'}</span>
+      <span id="loader" class="hidden absolute right-4">
+        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+      </span>
+    </button>
+</form>
+<script type="module">
+  const form = document.getElementById("configForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const buttonText = document.getElementById("buttonText");
+  const loader = document.getElementById("loader");
+  // Elimina cualquier intento de modificar la etiqueta <html> en Form.astro. El script JS puede leer el valor de data-has-assistant si está presente, pero no debe modificar el HTML aquí.
+  const hasAssistant = document.documentElement.getAttribute("data-has-assistant") === 'true';
+
+  function showAlert(type, message) {
+    // Use the new alert system if available, fallback to console
+    if (window.showAlert) {
+      window.showAlert(type, message);
+    } else {
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    loader.classList.remove("hidden");
+    buttonText.textContent = hasAssistant ? "Guardando..." : "Creando agente...";
+    // Clear any existing alerts
+    if (window.clearAlerts) {
+      window.clearAlerts();
+    }
+
+    const formData = new FormData(form);
+    const json = { fields: Object.fromEntries(formData.entries()) };
+
+    try {
+      // Log user action (simplified for now)
+      console.log('Form submit started:', { hasAssistant });
+      
+      const res = await fetch("/api/guardar-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        console.log('Form submit success:', { hasAssistant, assistantId: data.assistantId });
+        const message = hasAssistant 
+          ? "Cambios guardados exitosamente" 
+          : "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
+        showAlert("success", message);
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        console.error('Form submit failed:', { error: data.error, hasAssistant });
+        showAlert("error", data.error || "Error al guardar los cambios");
+      }
+    } catch (err) {
+      console.error('Form submit network error:', { error: err.message, hasAssistant });
+      showAlert("error", "Error de red o del servidor");
+    } finally {
+      submitBtn.disabled = false;
+      loader.classList.add("hidden");
+      buttonText.textContent = hasAssistant ? "Guardar Cambios" : "Crear agente";
+    }
+  });
+</script>
