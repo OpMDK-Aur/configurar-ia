@@ -1,20 +1,18 @@
 ---
 import { actions } from "astro:actions";
-import { FormularioConfiguracion, Tono, Objetivo } from "../types/index";
+import { FormularioConfiguracion } from "../types/index";
 import type { AirtableRecord } from "../types/airtable";
-import Spinner from "./Spinner.astro";
 
 export const prerender = false;
 
-const { data, error } = await Astro.callAction(
+const { data: actionData, error } = await Astro.callAction(
   actions.obtenerDatosConfiguracion,
   undefined
 );
 
 if (error) console.error(error);
 
-// Transform Airtable data to form data structure
-const airtableData = data?.data as AirtableRecord | undefined;
+const airtableData = actionData?.data as AirtableRecord | undefined;
 const fields = airtableData?.fields as FormularioConfiguracion | undefined;
 
 const formData: FormularioConfiguracion = {
@@ -22,8 +20,9 @@ const formData: FormularioConfiguracion = {
   NombreEmpresa: fields?.NombreEmpresa || "",
   DescripcionEmpresa: fields?.DescripcionEmpresa || "",
   Sector: fields?.Sector || "",
+};
 ---
-<!-- Alert container will be handled by AlertSystem component -->
+
 {!fields?.openAiAssistantId ? (
   <div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
     <strong>¡Aún no tienes un agente creado!</strong> Completa la configuración y presiona <b>Crear agente</b> para comenzar.
@@ -38,184 +37,88 @@ const formData: FormularioConfiguracion = {
     </div>
   </div>
 )}
-<form
-  id="configForm"
-  class="w-full"
->
+
+<form id="configForm" class="w-full">
   <div class="flex flex-col gap-5">
-    <div class="grid grid-cols-3 gap-10 z-20 px-2.5">
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid grid-cols-3 gap-10 px-2.5">
+
+      <!-- Nombre Asistente -->
       <div class="flex flex-col gap-2">
-        <label
-          for="NombreAsistente"
-          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
-          title="El nombre que tendrá tu asistente virtual. Este nombre será visible para tus clientes."
-        >
-          Nombre del asistente
-          <span class="text-red-500 ml-1">*</span>
+        <label for="NombreAsistente" class="text-[#7806F1] text-xl font-bold">
+          Nombre del asistente <span class="text-red-500">*</span>
         </label>
         <input
-          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          class="bg-white p-2 border rounded-xl h-12"
           type="text"
           id="NombreAsistente"
           name="NombreAsistente"
-          placeholder="Ingrese el nombre del asistente"
           value={formData.NombreAsistente}
           required
-          aria-label="Nombre del asistente"
-          aria-describedby="NombreAsistente-description"
         />
-        <span id="NombreAsistente-description" class="sr-only">
-          El nombre que tendrá tu asistente virtual. Este nombre será visible para tus clientes.
-        </span>
       </div>
+
+      <!-- Nombre Empresa -->
       <div class="flex flex-col gap-2">
-        <label
-          for="NombreEmpresa"
-          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
-          title="El nombre de tu empresa o negocio. Este nombre será usado por el asistente para referirse a tu empresa."
-        >
-          Nombre de la empresa
-          <span class="text-red-500 ml-1">*</span>
+        <label for="NombreEmpresa" class="text-[#7806F1] text-xl font-bold">
+          Nombre de la empresa <span class="text-red-500">*</span>
         </label>
         <input
-          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          class="bg-white p-2 border rounded-xl h-12"
           type="text"
           id="NombreEmpresa"
           name="NombreEmpresa"
-          placeholder="Ingrese el nombre de la empresa"
           value={formData.NombreEmpresa}
           required
-          aria-label="Nombre de la empresa"
-          aria-describedby="NombreEmpresa-description"
         />
-        <span id="NombreEmpresa-description" class="sr-only">
-          El nombre de tu empresa o negocio. Este nombre será usado por el asistente para referirse a tu empresa.
-        </span>
+      </div>
 
-
-    <div class="grid grid-cols-3 gap-10 px-2.5">
+      <!-- Sector -->
       <div class="flex flex-col gap-2">
-        <label
-          for="Sector"
-          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
-          title="El sector o industria en la que opera tu empresa. Esto ayuda al asistente a entender mejor el contexto de tu negocio."
-        >
+        <label for="Sector" class="text-[#7806F1] text-xl font-bold">
           Sector
         </label>
         <input
-          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-12"
+          class="bg-white p-2 border rounded-xl h-12"
           type="text"
           id="Sector"
           name="Sector"
-          placeholder="Ingrese el sector de la empresa"
           value={formData.Sector}
-          aria-label="Sector de la empresa"
-          aria-describedby="Sector-description"
         />
-        <span id="Sector-description" class="sr-only">
-          El sector o industria en la que opera tu empresa. Esto ayuda al asistente a entender mejor el contexto de tu negocio.
-        </span>
       </div>
-      <div class="flex flex-col gap-2">
-        
-        </div>
-      </div>
+
     </div>
 
-    <div class="flex flex-col gap-5 px-2.5">
-      <div class="flex flex-col gap-2">
-        <label
-          for="DescripcionEmpresa"
-          class="text-[#7806F1] text-xl font-bold flex items-center gap-2 group relative"
-          title="Una descripción detallada de tu empresa, incluyendo su misión, visión y valores. Esto ayuda al asistente a representar mejor tu marca."
-        >
-          Descripción de la empresa
-        </label>
-        <textarea
-          class="bg-white p-2 border border-[#ddd] rounded-xl focus:outline-1 outline-[#7806F1] h-[150px]"
-          id="DescripcionEmpresa"
-          name="DescripcionEmpresa"
-          placeholder="Ingrese la descripción de la empresa"
-          aria-label="Descripción de la empresa"
-          aria-describedby="DescripcionEmpresa-description"
-          >{formData.DescripcionEmpresa}</textarea
-        >
-        <span id="DescripcionEmpresa-description" class="sr-only">
-          Una descripción detallada de tu empresa, incluyendo su misión, visión y valores. Esto ayuda al asistente a representar mejor tu marca.
-        </span>
- 
-  </div>
+    <!-- DESCRIPCIÓN -->
+    <div class="flex flex-col gap-2 px-2.5">
+      <label for="DescripcionEmpresa" class="text-[#7806F1] text-xl font-bold">
+        Descripción de la empresa
+      </label>
+      <textarea
+        class="bg-white p-2 border rounded-xl h-[150px]"
+        id="DescripcionEmpresa"
+        name="DescripcionEmpresa"
+      >{formData.DescripcionEmpresa}</textarea>
+    </div>
+
+    <!-- BOTÓN -->
     <button
       id="submitBtn"
       type="submit"
-      class="bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 hover:cursor-pointer transition-all duration-150 active:scale-95 flex items-center justify-center gap-2 relative"
+      class="bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-2 relative"
     >
-      <span id="buttonText">{!fields?.openAiAssistantId ? 'Crear agente' : 'Guardar Cambios'}</span>
+      <span id="buttonText">
+        {!fields?.openAiAssistantId ? "Crear agente" : "Guardar Cambios"}
+      </span>
       <span id="loader" class="hidden absolute right-4">
-        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+        <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+          <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        </svg>
       </span>
     </button>
+
+  </div>
 </form>
-<script type="module">
-  const form = document.getElementById("configForm");
-  const submitBtn = document.getElementById("submitBtn");
-  const buttonText = document.getElementById("buttonText");
-  const loader = document.getElementById("loader");
-  // Elimina cualquier intento de modificar la etiqueta <html> en Form.astro. El script JS puede leer el valor de data-has-assistant si está presente, pero no debe modificar el HTML aquí.
-  const hasAssistant = document.documentElement.getAttribute("data-has-assistant") === 'true';
 
-  function showAlert(type, message) {
-    // Use the new alert system if available, fallback to console
-    if (window.showAlert) {
-      window.showAlert(type, message);
-    } else {
-      console.log(`${type.toUpperCase()}: ${message}`);
-    }
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    submitBtn.disabled = true;
-    loader.classList.remove("hidden");
-    buttonText.textContent = hasAssistant ? "Guardando..." : "Creando agente...";
-    // Clear any existing alerts
-    if (window.clearAlerts) {
-      window.clearAlerts();
-    }
-
-    const formData = new FormData(form);
-    const json = { fields: Object.fromEntries(formData.entries()) };
-
-    try {
-      // Log user action (simplified for now)
-      console.log('Form submit started:', { hasAssistant });
-      
-      const res = await fetch("/api/guardar-config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(json),
-      });
-      
-      const data = await res.json();
-      
-      if (data.success) {
-        console.log('Form submit success:', { hasAssistant, assistantId: data.assistantId });
-        const message = hasAssistant 
-          ? "Cambios guardados exitosamente" 
-          : "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
-        showAlert("success", message);
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        console.error('Form submit failed:', { error: data.error, hasAssistant });
-        showAlert("error", data.error || "Error al guardar los cambios");
-      }
-    } catch (err) {
-      console.error('Form submit network error:', { error: err.message, hasAssistant });
-      showAlert("error", "Error de red o del servidor");
-    } finally {
-      submitBtn.disabled = false;
-      loader.classList.add("hidden");
-      buttonText.textContent = hasAssistant ? "Guardar Cambios" : "Crear agente";
-    }
-  });
-</script>
