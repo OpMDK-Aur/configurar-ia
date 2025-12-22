@@ -45,7 +45,6 @@ export const FormularioConfiguracionSchema = z.object({
 	fields: z.object({
 		NombreAsistente: z.string().min(1, 'El nombre del asistente es requerido'),
 		NombreEmpresa: z.string().min(1, 'El nombre de la empresa es requerido'),
-		Tono: z.nativeEnum(Tono),
 		DescripcionEmpresa: z.string().optional(),
 		Sector: z.string().optional(),
 		ClientesObjetivos: z.string().optional(),
