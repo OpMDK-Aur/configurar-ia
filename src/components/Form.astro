@@ -121,4 +121,66 @@ const formData: FormularioConfiguracion = {
 
   </div>
 </form>
+<script type="module">
+  const form = document.getElementById("configForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const buttonText = document.getElementById("buttonText");
+  const loader = document.getElementById("loader");
+  // Elimina cualquier intento de modificar la etiqueta <html> en Form.astro. El script JS puede leer el valor de data-has-assistant si está presente, pero no debe modificar el HTML aquí.
+  const hasAssistant = document.documentElement.getAttribute("data-has-assistant") === 'true';
 
+  function showAlert(type, message) {
+    // Use the new alert system if available, fallback to console
+    if (window.showAlert) {
+      window.showAlert(type, message);
+    } else {
+      console.log(`${type.toUpperCase()}: ${message}`);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    loader.classList.remove("hidden");
+    buttonText.textContent = hasAssistant ? "Guardando..." : "Creando agente...";
+    // Clear any existing alerts
+    if (window.clearAlerts) {
+      window.clearAlerts();
+    }
+
+    const formData = new FormData(form);
+    const json = { fields: Object.fromEntries(formData.entries()) };
+
+    try {
+      // Log user action (simplified for now)
+      console.log('Form submit started:', { hasAssistant });
+
+      const res = await fetch("/api/guardar-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(json),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        console.log('Form submit success:', { hasAssistant, assistantId: data.assistantId });
+        const message = hasAssistant 
+          ? "Cambios guardados exitosamente" 
+          : "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
+        showAlert("success", message);
+        setTimeout(() => window.location.reload(), 2000);
+      } else {
+        console.error('Form submit failed:', { error: data.error, hasAssistant });
+        showAlert("error", data.error || "Error al guardar los cambios");
+      }
+    } catch (err) {
+      console.error('Form submit network error:', { error: err.message, hasAssistant });
+      showAlert("error", "Error de red o del servidor");
+    } finally {
+      submitBtn.disabled = false;
+      loader.classList.add("hidden");
+      buttonText.textContent = hasAssistant ? "Guardar Cambios" : "Crear agente";
+    }
+  });
+</script>
