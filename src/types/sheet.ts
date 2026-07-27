@@ -1,12 +1,12 @@
 import { FormularioConfiguracion, ConfiguracionAvanzada } from './index';
 
-export interface AirtableRecord {
+export interface SheetRecord {
     id: string;
     fields: FormularioConfiguracion | ConfiguracionAvanzada;
 }
 
-export interface AirtableResponse {
+export interface DataResponse {
     success: boolean;
-    data?: AirtableRecord;
+    data?: SheetRecord;
     error?: string;
-} 
+}

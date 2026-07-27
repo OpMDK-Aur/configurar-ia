@@ -2,19 +2,19 @@
 import Layout from '../layouts/Layout.astro';
 import { getAsistente } from '../services';
 import type { FormularioConfiguracion } from '../types';
-import type { AirtableRecord } from '../types/airtable';
+import type { SheetRecord } from '../types/sheet';
 import Title from './Title.astro';
 
 
-// Busca la configuración del asistente en Airtable
+// Busca la configuración del asistente en Sheets
 const { success, data, error } = await getAsistente();
 
 if (!success || !data) {
   throw new Error(error || 'Error al obtener la configuración del asistente');
 }
 
-const airtableRecord = data as AirtableRecord;
-const config = airtableRecord.fields as FormularioConfiguracion;
+const sheetRecord = data as SheetRecord;
+const config = sheetRecord.fields as FormularioConfiguracion;
 ---
 
 <Layout title="Configuración del Prompt">

@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-
-export interface AirtableResponse<T> {
-	success: boolean;
-	data?: T;
-	error?: string;
-}
-
-export interface MessageFromAirtable {
+export interface MessageFromSheet {
 	MsgId: number;
 	ConvId: string[];
 	Autor: string;
@@ -16,7 +9,6 @@ export interface MessageFromAirtable {
 	FechaHora: string;
 	id?: string;
 }
-
 
 export interface Message {
 	id?: string;
@@ -57,7 +49,9 @@ export const FormularioConfiguracionSchema = z.object({
 		InfoAdicional: z.string().optional(),
 		SitiosWeb: z.string().optional(),
 		NoResponder: z.string().optional(),
-    MensajeRecontacto: z.string().optional(),
+		Tono: z.string().optional(),
+		Objetivo: z.string().optional(),
+		MensajeRecontacto: z.string().optional(),
 		ComandosPropios: z.string().optional(),
 		openAiAssistantId: z.string().optional()
 	})

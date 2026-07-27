@@ -1,7 +1,7 @@
 import { defineAction } from 'astro:actions';
 import { FormularioConfiguracionSchema, type FormularioConfiguracion, ConfiguracionAvanzada, ConfiguracionAvanzadaSchema } from '../types';
-import { getAsistente, updateAirtableData, getConfiguracionAvanzada, createOpenAIAssistant, updateOpenAIAssistant } from '../services';
-import type { AirtableRecord } from '../types/airtable';
+import { getAsistente, updateRecord, getConfiguracionAvanzada, createOpenAIAssistant, updateOpenAIAssistant } from '../services/index';
+import type { SheetRecord } from '../types/sheet';
 
 export const server = {
     obtenerDatosConfiguracion: defineAction({
@@ -16,10 +16,10 @@ export const server = {
                     };
                 }
 
-                const airtableRecord = result.data as AirtableRecord;
-                return { 
-                    success: true, 
-                    data: airtableRecord
+                const sheetRecord = result.data as SheetRecord;
+                return {
+                    success: true,
+                    data: sheetRecord
                 };
             } catch (error) {
                 console.error('Error al obtener configuración:', error);
@@ -46,39 +46,36 @@ export const server = {
                     };
                 }
 
-                const airtableRecord = existingData.data as AirtableRecord;
-                //console.log('AIRTABLE RECORD', airtableRecord);
-                if (!airtableRecord.id) {
-                    console.error('No se encontró el ID del registro en Airtable');
+                const sheetRecord = existingData.data as SheetRecord;
+                if (!sheetRecord.id) {
+                    console.error('No se encontró el ID del registro');
                     return {
                         success: false,
-                        error: 'No se encontró el ID del registro en Airtable'
+                        error: 'No se encontró el ID del registro'
                     };
                 }
-
-                //console.log('Using record ID:', airtableRecord.id);
 
                 // Check if we have an existing OpenAI assistant ID
-                const existingAssistantId = (airtableRecord.fields as FormularioConfiguracion).openAiAssistantId;
-                let assistantResult;
+                // const existingAssistantId = (sheetRecord.fields as FormularioConfiguracion).openAiAssistantId;
+                // let assistantResult;
 
-                if (existingAssistantId) {
-                    // Update existing assistant
-                    //console.log('Updating existing OpenAI assistant:', existingAssistantId);
-                    assistantResult = await updateOpenAIAssistant(existingAssistantId, input.fields);
-                } else {
-                    // Create new assistant
-                    //console.log('Creating new OpenAI assistant');
-                    assistantResult = await createOpenAIAssistant(input.fields);
-                }
+                // if (existingAssistantId) {
+                //     // Update existing assistant
+                //     //console.log('Updating existing OpenAI assistant:', existingAssistantId);
+                //     assistantResult = await updateOpenAIAssistant(existingAssistantId, input.fields);
+                // } else {
+                //     // Create new assistant
+                //     //console.log('Creating new OpenAI assistant');
+                //     assistantResult = await createOpenAIAssistant(input.fields);
+                // }
 
-                if (!assistantResult.success) {
-                    console.error('Error al manejar el asistente de OpenAI:', assistantResult.error);
-                    return {
-                        success: false,
-                        error: assistantResult.error || 'Error al manejar el asistente de OpenAI'
-                    };
-                }
+                // if (!assistantResult.success) {
+                //     console.error('Error al manejar el asistente de OpenAI:', assistantResult.error);
+                //     return {
+                //         success: false,
+                //         error: assistantResult.error || 'Error al manejar el asistente de OpenAI'
+                //     };
+                // }
 
                 // Procesar los datos para eliminar campos undefined y mantener solo los campos necesarios
                 const processedData: FormularioConfiguracion & { openAiAssistantId?: string } = {
@@ -97,18 +94,19 @@ export const server = {
                     ProductosNoDisponibles: input.fields.ProductosNoDisponibles || '',
                     InfoAdicional: input.fields.InfoAdicional || '',
                     SitiosWeb: input.fields.SitiosWeb || '',
-                    openAiAssistantId: assistantResult.assistantId,
+                    //openAiAssistantId: assistantResult.assistantId,
                 };
 
-                const result = await updateAirtableData(
+                const result = await updateRecord(
                     'Asistente',
-                    airtableRecord.id,
-                    processedData
+                    sheetRecord.id,
+                    processedData,
+                    'asistenteId'
                 );
 
                 //console.log('Update result:', result);
 
-                if(result.success) {
+                if (result.success) {
                     return {
                         ...result,
                         message: 'Configuración actualizada correctamente',
@@ -139,10 +137,10 @@ export const server = {
                     };
                 }
 
-                const airtableRecord = result.data as AirtableRecord;
-                return { 
-                    success: true, 
-                    data: airtableRecord
+                const sheetRecord = result.data as SheetRecord;
+                return {
+                    success: true,
+                    data: sheetRecord
                 };
             } catch (error) {
                 console.error('Error al obtener configuración avanzada:', error);
@@ -163,14 +161,16 @@ export const server = {
 
                 if (existingData.success && existingData.data) {
                     // Si existe, actualizar
-                    const airtableRecord = existingData.data as AirtableRecord;
-                    const result = await updateAirtableData(
+                    const sheetRecord = existingData.data as SheetRecord;
+
+                    const result = await updateRecord(
                         'ConfiguracionAvanzada',
-                        airtableRecord.id,
-                        input.fields
+                        sheetRecord.id,
+                        { ...sheetRecord.fields, ...input.fields },
+                        'asistenteId'
                     );
                     return result;
-                } 
+                }
             } catch (error) {
                 console.error('Error al guardar configuración avanzada:', error);
                 return {

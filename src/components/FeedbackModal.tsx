@@ -7,7 +7,7 @@ interface FeedbackModalProps {
     message: Message;
     isPositive: boolean;
     previousMessage: Message;
-    }
+}
 
 export default function FeedbackModal({ isOpen, onClose, message, isPositive, previousMessage }: FeedbackModalProps) {
     const [feedback, setFeedback] = useState("");
@@ -37,7 +37,7 @@ export default function FeedbackModal({ isOpen, onClose, message, isPositive, pr
             setSending(false);
         }
     }
-   
+
 
     if (!isOpen) return null;
     return (
@@ -85,7 +85,7 @@ export default function FeedbackModal({ isOpen, onClose, message, isPositive, pr
                                 })}
                             </div>
                         </div>
-                        
+
                         {/* Assistant Message */}
                         <div className="bg-gray-100 p-4 rounded-lg">
                             <p className="text-sm mb-2 text-gray-600">Respuesta del asistente:</p>
