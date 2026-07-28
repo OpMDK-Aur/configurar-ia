@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Message, MessageFromAirtable } from "../types";
+import { Message, MessageFromSheet } from "../types";
 
 export function useConversation(clienteId: string) {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -19,7 +19,7 @@ export function useConversation(clienteId: string) {
                     if (data.conversation) {
                         setConversationId(data.conversation.id);
                         setThreadId(data.conversation.ThreadId);
-                        setMessages(data.messages.map((msg: MessageFromAirtable) => ({
+                        setMessages(data.messages.map((msg: MessageFromSheet) => ({
                             id: msg.id,
                             role: msg.RoleOpenAI,
                             content: msg.Contenido,
@@ -79,6 +79,10 @@ export function useConversation(clienteId: string) {
             const data = await response.json();
 
             if (data.success) {
+                // Si el thread fue recreado, actualizar el state
+                if (data.threadId) {
+                    setThreadId(data.threadId);
+                }
                 setMessages(prev => [...prev, {
                     id: data.MsgId,
                     role: 'assistant',

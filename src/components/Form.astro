@@ -1,186 +1,253 @@
 ---
 import { actions } from "astro:actions";
 import { FormularioConfiguracion } from "../types/index";
-import type { AirtableRecord } from "../types/airtable";
+import type { SheetRecord } from "../types/sheet";
 
 export const prerender = false;
 
 const { data: actionData, error } = await Astro.callAction(
-  actions.obtenerDatosConfiguracion,
-  undefined
+	actions.obtenerDatosConfiguracion,
+	undefined,
 );
 
 if (error) console.error(error);
 
-const airtableData = actionData?.data as AirtableRecord | undefined;
-const fields = airtableData?.fields as FormularioConfiguracion | undefined;
+const sheetData = actionData?.data as SheetRecord | undefined;
+const fields = sheetData?.fields as FormularioConfiguracion | undefined;
 
 const formData: FormularioConfiguracion = {
-  NombreAsistente: fields?.NombreAsistente || "",
-  NombreEmpresa: fields?.NombreEmpresa || "",
-  DescripcionEmpresa: fields?.DescripcionEmpresa || "",
-  Sector: fields?.Sector || "",
+	NombreAsistente: fields?.NombreAsistente || "",
+	NombreEmpresa: fields?.NombreEmpresa || "",
+	DescripcionEmpresa: fields?.DescripcionEmpresa || "",
+	Sector: fields?.Sector || "",
 };
 ---
 
-{!fields?.openAiAssistantId ? (
-  <div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
-    <strong>¡Aún no tienes un agente creado!</strong> Completa la configuración y presiona <b>Crear agente</b> para comenzar.
-  </div>
-) : (
-  <div class="flex justify-end w-full mb-2">
-    <div class="relative group">
-      <span class="inline-block w-4 h-4 rounded-full bg-green-500 border-2 border-green-700 shadow cursor-pointer"></span>
-      <div class="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 rounded bg-green-700 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
-        Agente creado y vinculado correctamente
-      </div>
-    </div>
-  </div>
-)}
+{
+	!fields?.openAiAssistantId ? (
+		<div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
+			<strong>¡Aún no tienes un agente creado!</strong> Completa la
+			configuración y presiona <b>Crear agente</b> para comenzar.
+		</div>
+	) : (
+		<div class="flex justify-end w-full mb-2">
+			<div class="relative group">
+				<span class="inline-block w-4 h-4 rounded-full bg-green-500 border-2 border-green-700 shadow cursor-pointer" />
+				<div class="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 rounded bg-green-700 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+					Agente creado y vinculado correctamente
+				</div>
+			</div>
+		</div>
+	)
+}
 
 <form id="configForm" class="w-full">
-  <div class="flex flex-col gap-5">
+	<div class="flex flex-col gap-5">
+		<!-- GRID PRINCIPAL -->
+		<div class="grid grid-cols-3 gap-10 px-2.5">
+			<!-- Nombre Asistente -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="NombreAsistente"
+					class="text-[#7806F1] text-xl font-bold"
+				>
+					Nombre del asistente <span class="text-red-500">*</span>
+				</label>
+				<input
+					class="bg-white p-2 border rounded-xl h-12"
+					type="text"
+					id="NombreAsistente"
+					name="NombreAsistente"
+					value={formData.NombreAsistente}
+					required
+				/>
+			</div>
 
-    <!-- GRID PRINCIPAL -->
-    <div class="grid grid-cols-3 gap-10 px-2.5">
+			<!-- Nombre Empresa -->
+			<div class="flex flex-col gap-2">
+				<label
+					for="NombreEmpresa"
+					class="text-[#7806F1] text-xl font-bold"
+				>
+					Nombre de la empresa <span class="text-red-500">*</span>
+				</label>
+				<input
+					class="bg-white p-2 border rounded-xl h-12"
+					type="text"
+					id="NombreEmpresa"
+					name="NombreEmpresa"
+					value={formData.NombreEmpresa}
+					required
+				/>
+			</div>
 
-      <!-- Nombre Asistente -->
-      <div class="flex flex-col gap-2">
-        <label for="NombreAsistente" class="text-[#7806F1] text-xl font-bold">
-          Nombre del asistente <span class="text-red-500">*</span>
-        </label>
-        <input
-          class="bg-white p-2 border rounded-xl h-12"
-          type="text"
-          id="NombreAsistente"
-          name="NombreAsistente"
-          value={formData.NombreAsistente}
-          required
-        />
-      </div>
+			<!-- Sector -->
+			<div class="flex flex-col gap-2">
+				<label for="Sector" class="text-[#7806F1] text-xl font-bold">
+					Sector
+				</label>
+				<input
+					class="bg-white p-2 border rounded-xl h-12"
+					type="text"
+					id="Sector"
+					name="Sector"
+					value={formData.Sector}
+				/>
+			</div>
+		</div>
 
-      <!-- Nombre Empresa -->
-      <div class="flex flex-col gap-2">
-        <label for="NombreEmpresa" class="text-[#7806F1] text-xl font-bold">
-          Nombre de la empresa <span class="text-red-500">*</span>
-        </label>
-        <input
-          class="bg-white p-2 border rounded-xl h-12"
-          type="text"
-          id="NombreEmpresa"
-          name="NombreEmpresa"
-          value={formData.NombreEmpresa}
-          required
-        />
-      </div>
+		<!-- INSTRUCCIONES -->
+		<div class="flex flex-col gap-2 px-2.5">
+			<label
+				for="DescripcionEmpresa"
+				class="text-[#7806F1] text-xl font-bold"
+			>
+				Instrucciones
+			</label>
 
-      <!-- Sector -->
-      <div class="flex flex-col gap-2">
-        <label for="Sector" class="text-[#7806F1] text-xl font-bold">
-          Sector
-        </label>
-        <input
-          class="bg-white p-2 border rounded-xl h-12"
-          type="text"
-          id="Sector"
-          name="Sector"
-          value={formData.Sector}
-        />
-      </div>
+			<textarea
+				id="DescripcionEmpresa"
+				class="bg-white p-2 border rounded-xl h-38"
+				name="DescripcionEmpresa"
+				maxlength="50000">{formData.DescripcionEmpresa}</textarea
+			>
+		</div>
 
-    </div>
+		<!-- BOTÓN -->
+		<button
+			id="submitBtn"
+			type="submit"
+			class="bg-[#7806F1] transition-all cursor-pointer hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
+		>
+			<span id="buttonText">
+				{
+					!fields?.openAiAssistantId
+						? "Crear agente"
+						: "Guardar Cambios"
+				}
+			</span>
+			<span id="loader" class="hidden absolute right-4">
+				<svg
+					class="animate-spin h-5 w-5 text-white"
+					viewBox="0 0 24 24"
+				>
+					<circle
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="4"
+						fill="none"></circle>
+					<path fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+				</svg>
+			</span>
+		</button>
+	</div>
 
-    <!-- INSTRUCCIONES -->
-    <div class="flex flex-col gap-2 px-2.5">
-      <label for="DescripcionEmpresa" class="text-[#7806F1] text-xl font-bold">
-        Instrucciones
-      </label>
-      <textarea
-        class="bg-white p-2 border rounded-xl h-[150px]"
-        id="DescripcionEmpresa"
-        name="DescripcionEmpresa"
-      >{formData.DescripcionEmpresa}</textarea>
-    </div>
+	<script type="module">
+		const form = document.getElementById("configForm");
+		const submitBtn = document.getElementById("submitBtn");
+		const buttonText = document.getElementById("buttonText");
+		const loader = document.getElementById("loader");
+		const textarea = document.getElementById("DescripcionEmpresa");
 
-    <!-- BOTÓN -->
-    <button
-      id="submitBtn"
-      type="submit"
-      class="bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-2 relative"
-    >
-      <span id="buttonText">
-        {!fields?.openAiAssistantId ? "Crear agente" : "Guardar Cambios"}
-      </span>
-      <span id="loader" class="hidden absolute right-4">
-        <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
-          <path fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-        </svg>
-      </span>
-    </button>
+		// Elimina cualquier intento de modificar la etiqueta <html> en Form.astro. El script JS puede leer el valor de data-has-assistant si está presente, pero no debe modificar el HTML aquí.
+		const hasAssistant =
+			document.documentElement.getAttribute("data-has-assistant") ===
+			"true";
 
-  </div>
+		function showAlert(type, message) {
+			// Use the new alert system if available, fallback to console
+			if (window.showAlert) {
+				window.showAlert(type, message);
+			} else {
+				console.log(`${type.toUpperCase()}: ${message}`);
+			}
+		}
+
+		form.addEventListener("submit", async (e) => {
+			e.preventDefault();
+
+			if (textarea.value.length === 0) {
+				showAlert(
+					"error",
+					"Por favor, ingresa las instrucciones para tu agente.",
+				);
+				return;
+			}
+
+			if (textarea.value.length > 50000) {
+				showAlert(
+					"error",
+					"El texto excede el límite de 50.000 caracteres.",
+				);
+				return;
+			}
+
+			submitBtn.disabled = true;
+			loader.classList.remove("hidden");
+			buttonText.textContent = hasAssistant
+				? "Guardando..."
+				: "Creando agente...";
+
+			// Clear any existing alerts
+			if (window.clearAlerts) {
+				window.clearAlerts();
+			}
+
+			const formData = new FormData(form);
+			const json = { fields: Object.fromEntries(formData.entries()) };
+
+			try {
+				// Log user action (simplified for now)
+				console.log("Form submit started:", { hasAssistant });
+
+				const res = await fetch("/api/guardar-config", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(json),
+				});
+
+				const data = await res.json();
+
+				if (data.success) {
+					console.log("Form submit success:", {
+						hasAssistant,
+						assistantId: data.assistantId,
+					});
+
+					const message = hasAssistant
+						? "Cambios guardados exitosamente"
+						: "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
+
+					showAlert("success", message);
+
+					setTimeout(() => window.location.reload(), 2000);
+				} else {
+					console.error("Form submit failed:", {
+						error: data.error,
+						hasAssistant,
+					});
+
+					showAlert(
+						"error",
+						data.error || "Error al guardar los cambios",
+					);
+				}
+			} catch (err) {
+				console.error("Form submit network error:", {
+					error: err.message,
+					hasAssistant,
+				});
+
+				showAlert("error", "Error de red o del servidor");
+			} finally {
+				submitBtn.disabled = false;
+				loader.classList.add("hidden");
+				buttonText.textContent = hasAssistant
+					? "Guardar Cambios"
+					: "Crear agente";
+			}
+		});
+	</script>
 </form>
-<script type="module">
-  const form = document.getElementById("configForm");
-  const submitBtn = document.getElementById("submitBtn");
-  const buttonText = document.getElementById("buttonText");
-  const loader = document.getElementById("loader");
-  // Elimina cualquier intento de modificar la etiqueta <html> en Form.astro. El script JS puede leer el valor de data-has-assistant si está presente, pero no debe modificar el HTML aquí.
-  const hasAssistant = document.documentElement.getAttribute("data-has-assistant") === 'true';
-
-  function showAlert(type, message) {
-    // Use the new alert system if available, fallback to console
-    if (window.showAlert) {
-      window.showAlert(type, message);
-    } else {
-      console.log(`${type.toUpperCase()}: ${message}`);
-    }
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    submitBtn.disabled = true;
-    loader.classList.remove("hidden");
-    buttonText.textContent = hasAssistant ? "Guardando..." : "Creando agente...";
-    // Clear any existing alerts
-    if (window.clearAlerts) {
-      window.clearAlerts();
-    }
-
-    const formData = new FormData(form);
-    const json = { fields: Object.fromEntries(formData.entries()) };
-
-    try {
-      // Log user action (simplified for now)
-      console.log('Form submit started:', { hasAssistant });
-
-      const res = await fetch("/api/guardar-config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(json),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        console.log('Form submit success:', { hasAssistant, assistantId: data.assistantId });
-        const message = hasAssistant 
-          ? "Cambios guardados exitosamente" 
-          : "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
-        showAlert("success", message);
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        console.error('Form submit failed:', { error: data.error, hasAssistant });
-        showAlert("error", data.error || "Error al guardar los cambios");
-      }
-    } catch (err) {
-      console.error('Form submit network error:', { error: err.message, hasAssistant });
-      showAlert("error", "Error de red o del servidor");
-    } finally {
-      submitBtn.disabled = false;
-      loader.classList.add("hidden");
-      buttonText.textContent = hasAssistant ? "Guardar Cambios" : "Crear agente";
-    }
-  });
-</script>
