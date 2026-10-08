@@ -99,12 +99,10 @@ const formData: FormularioConfiguracion = {
 		<button
 			id="submitBtn"
 			type="submit"
-			class="bg-[#7806F1] transition-all cursor-poAinter hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
+			class="bg-[#7806F1] transition-all cursor-pointer hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
 		>
 			<span id="buttonText">
-				{
-					"Guardar cambios"
-				}
+				{"Guardar cambios"}
 			</span>
 			<span id="loader" class="hidden absolute right-4">
 				<svg
@@ -149,10 +147,7 @@ const formData: FormularioConfiguracion = {
 			e.preventDefault();
 
 			if (textarea.value.length === 0) {
-				showAlert(
-					"error",
-					"Por favor, ingresa las instrucciones",
-				);
+				showAlert("error", "Por favor, ingresa las instrucciones");
 				return;
 			}
 

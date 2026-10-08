@@ -40,13 +40,16 @@ const disableLinks = !hasValidAssistant(fields);
 		<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Configuración de IA</title>
+
+		<link
+			href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css"
+			rel="stylesheet"
+		/>
 	</head>
 	<body class="min-h-screen bg-linear-to-br from-[#f6f3ff] to-[#e9e6f7]">
 		<AlertProvider client:load>
-			<NavBar disableLinks={disableLinks} />
-			<main
-				class="flex-1 flex flex-col items-center pl-48 py-12 min-h-screen"
-			>
+			<!-- <NavBar disableLinks={disableLinks} /> -->
+			<main class="flex-1 flex flex-col items-center py-12 min-h-screen">
 				<div
 					class="w-full max-w-5xl bg-white/60 backdrop-blur-md rounded-2xl shadow-2xl p-8 flex flex-col items-center"
 				>
@@ -54,6 +57,30 @@ const disableLinks = !hasValidAssistant(fields);
 				</div>
 			</main>
 		</AlertProvider>
+
+		<div id="n8n-chat"></div>
+
+		<script is:inline type="module">
+			import { createChat } from "https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js";
+
+			createChat({
+				webhookUrl:
+					"https://n8n.madketing.io/webhook/499666c3-d807-4bb7-8195-43932f64a91f/chat",
+				target: "#n8n-chat",
+				mode: "window",
+				showWelcomeScreen: false,
+				initialMessages: ["¡Hola! ¿En qué puedo ayudarte?"],
+				i18n: {
+					en: {
+						title: "Asistente IA",
+						subtitle: "Proba tu prompt",
+						footer: "",
+						getStarted: "Nueva conversación",
+						inputPlaceholder: "Escribí tu mensaje...",
+					},
+				},
+			});
+		</script>
 
 		<script>
 			// Expose alert functions globally for non-React components
@@ -89,5 +116,84 @@ const disableLinks = !hasValidAssistant(fields);
 		font-family: "Gilroy", sans-serif;
 		display: flex;
 		color: #333;
+
+		--chat--font-family:
+			"Gilroy", -apple-system, "Segoe UI", Roboto, sans-serif;
+		--chat--border-radius: 1rem;
+
+		--chat--color--primary: #7806f1;
+		--chat--color--primary-shade-50: #976ff1;
+		--chat--color--primary--shade-100: #5f05c0;
+		--chat--color--secondary: #7806f1;
+		--chat--color-secondary-shade-50: #976ff1;
+		--chat--color-light: #f7f5fc;
+		--chat--color-dark: #1f1534;
+
+		--chat--window--width: 380px;
+		--chat--window--height: 600px;
+		--chat--window--bottom: 1.5rem;
+		--chat--window--right: 1.5rem;
+		--chat--window--border: 1px solid #e6e0f5;
+		--chat--window--border-radius: 1rem;
+
+		--chat--toggle--size: 60px;
+		--chat--toggle--background: #7806f1;
+		--chat--toggle--hover--background: #976ff1;
+		--chat--toggle--active--background: #5f05c0;
+		--chat--toggle--color: #ffffff;
+
+		--chat--header--background: linear-gradient(
+			135deg,
+			#7806f1 0%,
+			#976ff1 100%
+		);
+		--chat--header--color: #ffffff;
+		--chat--header--padding: 1rem 1.25rem;
+		--chat--heading--font-size: 1.25rem;
+		--chat--subtitle--font-size: 0.875rem;
+		--chat--subtitle--line-height: 1.4;
+
+		--chat--body--background: #f7f5fc;
+		--chat--messages-list--padding: 1.25rem;
+		--chat--message--font-size: 0.95rem;
+		--chat--message--padding: 0.75rem 1rem;
+		--chat--message--border-radius: 1.125rem;
+		--chat--message--margin-bottom: 0.625rem;
+		--chat--message--bot--background: #ffffff;
+		--chat--message--bot--color: #1f1534;
+		--chat--message--bot--border: 1px solid #ece7f7;
+		--chat--message--user--background: #7806f1;
+		--chat--message--user--color: #ffffff;
+
+		--chat--footer--background: #ffffff;
+		--chat--input--background: #ffffff;
+		--chat--input--padding: 0.9rem 1.1rem;
+		--chat--input--border: 0;
+		--chat--input--border-active: 0;
+		--chat--input--send--button--background: #ffffff;
+		--chat--input--send--button--color: #7806f1;
+		--chat--input--send--button--background-hover: #f3ecff;
+		--chat--input--send--button--color-hover: #5f05c0;
+	}
+
+	#n8n-chat .chat-message-from-bot {
+		border-bottom-left-radius: 0.25rem;
+		box-shadow: 0 1px 2px rgba(31, 21, 52, 0.06);
+	}
+
+	#n8n-chat .chat-message-from-user {
+		border-bottom-right-radius: 0.25rem;
+	}
+
+	#n8n-chat .chat-inputs {
+		border-top: 1px solid #ece7f7;
+	}
+
+	#n8n-chat .chat-window {
+		box-shadow: 0 20px 50px rgba(120, 6, 241, 0.25);
+	}
+
+	#n8n-chat .chat-window-toggle {
+		box-shadow: 0 8px 24px rgba(120, 6, 241, 0.4);
 	}
 </style>
