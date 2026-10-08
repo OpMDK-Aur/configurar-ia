@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getAsistente, updateRecord, findRecord, createOpenAIAssistant, updateOpenAIAssistant } from '../../services/index';
+import { getAsistente, updateRecord, findRecord } from '../../services/index';
 import { FormularioConfiguracionSchema } from '../../types';
 import type { FormularioConfiguracion } from '../../types';
 import { logger, generateRequestId } from '../../lib/logger';
@@ -57,41 +57,15 @@ export const POST: APIRoute = async ({ request }) => {
 		}
 
 		const asistenteConfig = sheetRecord.fields as FormularioConfiguracion;
-		const existingAssistantId = asistenteConfig.openAiAssistantId;
 
 		// Obtener locationId del entorno para actualizar AsistentePorCliente
 		const locationId = import.meta.env.LOCATION_ID;
 
-		let assistantResult;
-
-		if (existingAssistantId) {
-			logger.info('Actualizando asistente existente', {
-				assistantId: existingAssistantId,
-				requestId
-			});
-
-			let fields = input.fields as FormularioConfiguracion;
-
-			fields.ComandosPropios = asistenteConfig.ComandosPropios;
-			assistantResult = await updateOpenAIAssistant(existingAssistantId, fields);
-		} else {
-			logger.info('Creando nuevo asistente', { requestId });
-			assistantResult = await createOpenAIAssistant(input.fields);
-		}
-
-		// if (!assistantResult.success) {
-		// 	logger.error('Error al manejar el asistente de OpenAI', {
-		// 		error: assistantResult.error,
-		// 		requestId
-		// 	});
-
-		// 	return new Response(JSON.stringify({ success: false, error: assistantResult.error || 'Error al manejar el asistente de OpenAI' }), { status: 500 });
-		// }
-
 		const processedData: FormularioConfiguracion & { openAiAssistantId?: string } = {
 			...asistenteConfig,
 			...input.fields,
-			// openAiAssistantId: assistantResult.assistantId
+			openAiAssistantId: asistenteConfig.openAiAssistantId,
+			ComandosPropios: asistenteConfig.ComandosPropios
 		};
 
 		logger.info('Actualizando datos en Sheets', {
@@ -115,14 +89,12 @@ export const POST: APIRoute = async ({ request }) => {
 
 			logger.apiSuccess('guardar-config', {
 				duration,
-				assistantId: assistantResult.assistantId,
 				requestId
 			});
 
 			return new Response(JSON.stringify({
 				success: true,
-				message: 'Configuración actualizada correctamente',
-				assistantId: assistantResult.assistantId
+				message: 'Configuración actualizada correctamente'
 			}), { status: 200 });
 		}
 

@@ -118,7 +118,7 @@ export async function updateRowByColumn(
 	await sheets.spreadsheets.values.update({
 		spreadsheetId,
 		range,
-		valueInputOption: 'USER_ENTERED',
+		valueInputOption: 'RAW',
 		requestBody: { values: [orderedValues] },
 	});
 }

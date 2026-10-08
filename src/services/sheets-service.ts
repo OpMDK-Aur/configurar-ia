@@ -1,5 +1,6 @@
 import { findFirst, appendRow, updateRowByColumn, generateId } from '../lib/sheets';
 import type { FormularioConfiguracion, ConfiguracionAvanzada } from '../types';
+import { logger } from '../lib/logger';
 import { DataResponse, SheetRecord } from '../types/sheet';
 
 // ─── Asistente | IA ───────────────────────────────────────────────
@@ -39,6 +40,7 @@ export async function getAsistente(): Promise<DataResponse> {
 			data: record
 		};
 	} catch (error) {
+		// logger.error('Error al obtener asistente', {}, error instanceof Error ? error : undefined);
 		return {
 			success: false,
 			error: error instanceof Error ? error.message : 'Error al obtener datos',
@@ -86,6 +88,7 @@ export async function getConfiguracionAvanzada(): Promise<DataResponse> {
 		};
 
 	} catch (error) {
+		// logger.error('Error al obtener configuración avanzada', {}, error instanceof Error ? error : undefined);
 		return {
 			success: false,
 			error: error instanceof Error ? error.message : 'Error al obtener datos',

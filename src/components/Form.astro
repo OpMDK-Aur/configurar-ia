@@ -23,24 +23,6 @@ const formData: FormularioConfiguracion = {
 };
 ---
 
-{
-	!fields?.openAiAssistantId ? (
-		<div class="p-4 bg-yellow-100 text-yellow-800 rounded-lg text-center">
-			<strong>¡Aún no tienes un agente creado!</strong> Completa la
-			configuración y presiona <b>Crear agente</b> para comenzar.
-		</div>
-	) : (
-		<div class="flex justify-end w-full mb-2">
-			<div class="relative group">
-				<span class="inline-block w-4 h-4 rounded-full bg-green-500 border-2 border-green-700 shadow cursor-pointer" />
-				<div class="absolute right-6 top-1/2 -translate-y-1/2 px-3 py-1 rounded bg-green-700 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
-					Agente creado y vinculado correctamente
-				</div>
-			</div>
-		</div>
-	)
-}
-
 <form id="configForm" class="w-full">
 	<div class="flex flex-col gap-5">
 		<!-- GRID PRINCIPAL -->
@@ -117,13 +99,11 @@ const formData: FormularioConfiguracion = {
 		<button
 			id="submitBtn"
 			type="submit"
-			class="bg-[#7806F1] transition-all cursor-pointer hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
+			class="bg-[#7806F1] transition-all cursor-poAinter hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
 		>
 			<span id="buttonText">
 				{
-					!fields?.openAiAssistantId
-						? "Crear agente"
-						: "Guardar Cambios"
+					"Guardar cambios"
 				}
 			</span>
 			<span id="loader" class="hidden absolute right-4">
@@ -171,7 +151,7 @@ const formData: FormularioConfiguracion = {
 			if (textarea.value.length === 0) {
 				showAlert(
 					"error",
-					"Por favor, ingresa las instrucciones para tu agente.",
+					"Por favor, ingresa las instrucciones",
 				);
 				return;
 			}
@@ -186,9 +166,7 @@ const formData: FormularioConfiguracion = {
 
 			submitBtn.disabled = true;
 			loader.classList.remove("hidden");
-			buttonText.textContent = hasAssistant
-				? "Guardando..."
-				: "Creando agente...";
+			buttonText.textContent = "Guardando...";
 
 			// Clear any existing alerts
 			if (window.clearAlerts) {
@@ -211,18 +189,7 @@ const formData: FormularioConfiguracion = {
 				const data = await res.json();
 
 				if (data.success) {
-					console.log("Form submit success:", {
-						hasAssistant,
-						assistantId: data.assistantId,
-					});
-
-					const message = hasAssistant
-						? "Cambios guardados exitosamente"
-						: "¡Agente creado exitosamente! Tu asistente virtual ya está listo para usar.";
-
-					showAlert("success", message);
-
-					setTimeout(() => window.location.reload(), 2000);
+					showAlert("success", "Cambios guardados exitosamente");
 				} else {
 					console.error("Form submit failed:", {
 						error: data.error,
@@ -244,9 +211,7 @@ const formData: FormularioConfiguracion = {
 			} finally {
 				submitBtn.disabled = false;
 				loader.classList.add("hidden");
-				buttonText.textContent = hasAssistant
-					? "Guardar Cambios"
-					: "Crear agente";
+				buttonText.textContent = "Guardar cambios";
 			}
 		});
 	</script>
