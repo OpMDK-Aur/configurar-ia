@@ -95,36 +95,65 @@ const formData: FormularioConfiguracion = {
 			>
 		</div>
 
-		<!-- BOTÓN -->
-		<button
-			id="submitBtn"
-			type="submit"
-			class="bg-[#7806F1] transition-all cursor-pointer hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
-		>
-			<span id="buttonText">
-				{"Guardar cambios"}
-			</span>
-			<span id="loader" class="hidden absolute right-4">
-				<svg
-					class="animate-spin h-5 w-5 text-white"
-					viewBox="0 0 24 24"
-				>
-					<circle
-						cx="12"
-						cy="12"
-						r="10"
-						stroke="currentColor"
-						stroke-width="4"
-						fill="none"></circle>
-					<path fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-				</svg>
-			</span>
-		</button>
+		<div class="flex items-center justify-between">
+			<button
+				id="submitBtn"
+				type="submit"
+				class="bg-[#7806F1] transition-all cursor-pointer hover:bg-[#976FF1] mt-5 mx-auto py-2 px-5 rounded-lg text-white text-lg w-48 flex items-center justify-center gap-3 relative"
+			>
+				<span id="buttonText">
+					{"Guardar cambios"}
+				</span>
+				<span id="loader" class="hidden absolute right-4">
+					<svg
+						class="animate-spin h-5 w-5 text-white"
+						viewBox="0 0 24 24"
+					>
+						<circle
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							stroke-width="4"
+							fill="none"></circle>
+						<path fill="currentColor" d="M4 12a8 8 0 018-8v8z"
+						></path>
+					</svg>
+				</span>
+			</button>
+
+			<button
+				id="resetBtn"
+				type="button"
+				class="bg-transparent transition-all cursor-pointer hover:bg-[#7806F1]/20 mt-5 mx-auto py-2 px-5 rounded-lg text-[#7806F1] text-lg flex items-center justify-center gap-3 relative"
+			>
+				<span id="buttonText">
+					{"Reiniciar conversacion"}
+				</span>
+				<span id="loader" class="hidden absolute right-4">
+					<svg
+						class="animate-spin h-5 w-5 text-white"
+						viewBox="0 0 24 24"
+					>
+						<circle
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							stroke-width="4"
+							fill="none"></circle>
+						<path fill="currentColor" d="M4 12a8 8 0 018-8v8z"
+						></path>
+					</svg>
+				</span>
+			</button>
+		</div>
 	</div>
 
 	<script type="module">
 		const form = document.getElementById("configForm");
 		const submitBtn = document.getElementById("submitBtn");
+		const resetBtn = document.getElementById("resetBtn");
 		const buttonText = document.getElementById("buttonText");
 		const loader = document.getElementById("loader");
 		const textarea = document.getElementById("DescripcionEmpresa");
@@ -168,6 +197,18 @@ const formData: FormularioConfiguracion = {
 				window.clearAlerts();
 			}
 
+			await onSave();
+		});
+
+		resetBtn.addEventListener("click", async (e) => {
+			e.preventDefault();
+
+			await onSave();
+
+			window.location.reload();
+		})
+
+		async function onSave() {
 			const formData = new FormData(form);
 			const json = { fields: Object.fromEntries(formData.entries()) };
 
@@ -208,6 +249,6 @@ const formData: FormularioConfiguracion = {
 				loader.classList.add("hidden");
 				buttonText.textContent = "Guardar cambios";
 			}
-		});
+		}
 	</script>
 </form>
