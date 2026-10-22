@@ -180,10 +180,10 @@ const formData: FormularioConfiguracion = {
 				return;
 			}
 
-			if (textarea.value.length > 50000) {
+			if (textarea.value.length > 65000) {
 				showAlert(
 					"error",
-					"El texto excede el límite de 50.000 caracteres.",
+					"El texto excede el límite de 65.000 caracteres.",
 				);
 				return;
 			}
